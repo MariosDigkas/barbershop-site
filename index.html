@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbershop — Ραντεβού</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#17140F;
+    --paper:#F3EBDC;
+    --paper-dim:rgba(243,235,220,0.62);
+    --paper-faint:rgba(243,235,220,0.32);
+    --accent:#8A2E22;
+    --line:rgba(243,235,220,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink); color:var(--paper);
+    font-family:'Inter', sans-serif; font-weight:400;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%; display:block;}
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  h1,h2,h3{ font-family:'Fraunces', serif; font-weight:500; line-height:1.12; letter-spacing:-0.01em; color:var(--paper); }
+  em{ font-style:italic; }
+  .mono{ font-family:'Space Mono', monospace; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 32px; }
+  .eyebrow{ font-family:'Space Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--paper-dim); }
+
+  .nav{ position:sticky; top:0; z-index:100; background:rgba(23,20,15,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  .nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:76px; }
+  .wordmark{ font-family:'Fraunces', serif; font-style:italic; font-weight:500; font-size:1.35rem; letter-spacing:0.01em; }
+  .nav-links{ display:flex; align-items:center; gap:40px; font-size:0.9rem; }
+  .nav-links a{ color:var(--paper-dim); transition:color .2s; }
+  .nav-links a:hover{ color:var(--paper); }
+  .nav-cta{ color:var(--paper) !important; border-bottom:1px solid var(--accent); padding-bottom:2px; }
+  @media(max-width:760px){ .nav-links a:not(.nav-cta){ display:none; } }
+
+  .hero{ position:relative; min-height:86vh; display:flex; align-items:flex-end; }
+  .hero-bg{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(180deg, rgba(23,20,15,0.22) 0%, rgba(23,20,15,0.55) 60%, rgba(23,20,15,1) 100%),
+      url('https://images.unsplash.com/photo-1759142449398-89357aa1bb36?q=80&w=2200&auto=format&fit=crop');
+    background-size:cover; background-position:center 32%;
+    filter:grayscale(0.42) contrast(1.06) brightness(0.9);
+  }
+  .hero-inner{ position:relative; z-index:2; width:100%; padding:0 32px 90px; max-width:1080px; margin:0 auto; }
+  .hero .eyebrow{ margin-bottom:18px; display:block; }
+  .hero h1{ font-size:clamp(2.5rem, 5.6vw, 4.6rem); max-width:700px; }
+  .hero p{ margin-top:22px; max-width:440px; font-size:1.02rem; color:var(--paper-dim); }
+  .hero-cta{ display:inline-block; margin-top:34px; font-size:0.94rem; font-weight:500; padding:15px 30px; background:var(--accent); color:var(--paper); transition:opacity .2s; }
+  .hero-cta:hover{ opacity:0.85; }
+
+  .section{ padding:110px 0; border-bottom:1px solid var(--line); }
+  .section-head{ max-width:520px; margin-bottom:56px; }
+  .section-head h2{ font-size:clamp(1.7rem,3vw,2.2rem); margin-top:12px; }
+  .section-head p{ margin-top:14px; color:var(--paper-dim); font-size:0.98rem; }
+
+  .step{ display:flex; gap:36px; padding:32px 0; border-top:1px solid var(--line); }
+  .step:last-child{ border-bottom:1px solid var(--line); }
+  .step .n{ font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--paper-faint); flex:0 0 40px; padding-top:4px; }
+  .step h3{ font-size:1.15rem; font-weight:500; margin-bottom:6px; }
+  .step p{ font-size:0.92rem; color:var(--paper-dim); max-width:480px; }
+
+  .g-row{ display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:2px; }
+  .g-row img{ width:100%; height:340px; object-fit:cover; filter:grayscale(0.3) contrast(1.05); opacity:0.92; transition:opacity .4s; }
+  .g-row img:hover{ opacity:1; }
+  @media(max-width:760px){ .g-row{ grid-template-columns:1fr; } .g-row img{ height:260px; } }
+
+  .svc-list{ max-width:560px; }
+  .svc-row{ display:flex; align-items:baseline; gap:14px; padding:18px 0; border-top:1px solid var(--line); }
+  .svc-list .svc-row:last-child{ border-bottom:1px solid var(--line); }
+  .svc-row .name{ font-family:'Fraunces', serif; font-size:1.05rem; }
+  .svc-row .fill{ flex:1; border-bottom:1px dotted var(--paper-faint); transform:translateY(-5px); }
+  .svc-row .price{ font-family:'Space Mono', monospace; font-size:0.92rem; color:var(--paper-dim); }
+
+  .booking-shell{ border:1px solid var(--line); }
+  .book-head{ display:flex; border-bottom:1px solid var(--line); overflow-x:auto; }
+  .tab{ flex:1; min-width:130px; padding:20px 22px; font-family:'Space Mono', monospace; font-size:0.76rem; letter-spacing:0.04em; color:var(--paper-faint); border-right:1px solid var(--line); text-align:left; transition:color .2s; }
+  .tab:last-child{ border-right:none; }
+  .tab.active{ color:var(--paper); }
+  .tab.done{ color:var(--paper-dim); }
+  .tab .tn{ display:block; margin-bottom:4px; }
+
+  .book-body{ padding:44px 40px; min-height:340px; }
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:fade .3s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .panel h3{ font-size:1.3rem; margin-bottom:6px; }
+  .panel .sub{ color:var(--paper-dim); font-size:0.9rem; margin-bottom:30px; }
+
+  .row-list .item{ display:flex; align-items:center; justify-content:space-between; gap:20px; padding:18px 4px; border-top:1px solid var(--line); cursor:pointer; }
+  .row-list .item:last-child{ border-bottom:1px solid var(--line); }
+  .row-list .item .l{ display:flex; align-items:center; gap:16px; }
+  .row-list .item .mark{ width:16px; height:16px; border:1px solid var(--paper-faint); border-radius:50%; flex:0 0 auto; position:relative; }
+  .row-list .item.selected .mark{ border-color:var(--accent); }
+  .row-list .item.selected .mark::after{ content:''; position:absolute; inset:3px; border-radius:50%; background:var(--accent); }
+  .row-list .item .t{ font-family:'Fraunces', serif; font-size:1.02rem; }
+  .row-list .item .d{ font-size:0.82rem; color:var(--paper-faint); margin-top:2px; }
+  .row-list .item .p{ font-family:'Space Mono', monospace; font-size:0.88rem; color:var(--paper-dim); white-space:nowrap; }
+  .row-list .item:hover .t{ color:var(--paper); }
+
+  /* calendar */
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .cal-head .m-label{ font-family:'Fraunces', serif; font-size:1.1rem; }
+  .cal-nav{ display:flex; gap:6px; }
+  .cal-nav button{ width:30px; height:30px; border:1px solid var(--line); font-size:0.9rem; }
+  .cal-nav button:hover{ border-color:var(--paper-faint); }
+  .cal-nav button[disabled]{ opacity:0.25; cursor:not-allowed; pointer-events:none; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:34px; }
+  .cal-wd{ text-align:center; font-family:'Space Mono', monospace; font-size:0.66rem; color:var(--paper-faint); padding-bottom:8px; text-transform:uppercase; }
+  .cal-day{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; border:1px solid transparent; font-size:0.92rem; color:var(--paper-dim); }
+  .cal-day.empty{ visibility:hidden; }
+  .cal-day.avail{ border-color:var(--line); color:var(--paper); cursor:pointer; }
+  .cal-day.avail:hover{ border-color:var(--paper-faint); }
+  .cal-day.past{ opacity:0.2; cursor:not-allowed; }
+  .cal-day.selected{ border-color:var(--accent); background:rgba(138,46,34,0.16); color:var(--paper); }
+
+  .slot-label{ font-family:'Space Mono', monospace; font-size:0.76rem; color:var(--paper-dim); margin-bottom:14px; }
+  .slot-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  .slot{ padding:10px 4px; text-align:center; font-family:'Space Mono', monospace; font-size:0.82rem; border:1px solid var(--line); color:var(--paper-dim); }
+  .slot:hover:not(.taken){ border-color:var(--paper-faint); color:var(--paper); }
+  .slot.selected{ border-color:var(--accent); color:var(--paper); }
+  .slot.taken{ display:none; }
+  .slot-empty{ font-size:0.86rem; color:var(--paper-faint); grid-column:1/-1; padding:12px 0; line-height:1.7; }
+  .retry-link{ color:var(--paper); border-bottom:1px solid var(--accent); font-size:0.86rem; padding-bottom:1px; margin-left:4px; }
+  .slot-loading{ grid-column:1/-1; display:flex; align-items:center; gap:10px; padding:14px 0; font-size:0.86rem; color:var(--paper-faint); font-family:'Space Mono', monospace; }
+  .slot-loading .slow-note{ display:block; width:100%; margin-top:6px; font-size:0.78rem; opacity:0.75; font-family:'Inter',sans-serif; }
+  @media(max-width:600px){ .slot-grid{ grid-template-columns:repeat(3,1fr); } }
+
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .field{ display:flex; flex-direction:column; gap:8px; }
+  .field.full{ grid-column:1/-1; }
+  .field label{ font-size:0.78rem; color:var(--paper-faint); }
+  .field input{ background:transparent; border:none; border-bottom:1px solid var(--line); padding:10px 2px; color:var(--paper); font-family:inherit; font-size:0.96rem; }
+  .field input:focus{ outline:none; border-color:var(--accent); }
+  @media(max-width:600px){ .form-grid{ grid-template-columns:1fr; } }
+
+  .book-foot{ display:flex; align-items:center; justify-content:space-between; padding:24px 40px; border-top:1px solid var(--line); flex-wrap:wrap; gap:14px; }
+  .summary{ font-size:0.86rem; color:var(--paper-dim); }
+  .summary b{ color:var(--paper); font-weight:500; }
+  .foot-btns{ display:flex; gap:24px; align-items:center; }
+  .btn-plain{ font-size:0.88rem; color:var(--paper-dim); }
+  .btn-plain:hover{ color:var(--paper); }
+  .btn-plain[disabled]{ opacity:0.3; cursor:not-allowed; pointer-events:none; }
+  .btn-solid{ padding:13px 26px; background:var(--accent); color:var(--paper); font-size:0.88rem; font-weight:500; transition:opacity .2s; }
+  .btn-solid[disabled]{ opacity:0.28; cursor:not-allowed; pointer-events:none; }
+  .btn-solid:hover:not([disabled]){ opacity:0.86; }
+
+  .confirm{ display:none; }
+  .confirm.active{ display:block; animation:fade .35s ease; }
+
+  /* status badge — spinner while syncing, then a hand-drawn checkmark (or X on error) */
+  .status{ display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:40px; }
+  .status-icon{
+    width:56px; height:56px; border-radius:50%; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+    color:var(--paper-dim); transition:border-color .3s ease, color .3s ease;
+  }
+  .confirm.is-success .status-icon{ border-color:var(--accent); color:var(--accent); }
+  .confirm.is-error .status-icon{ border-color:var(--accent); color:var(--accent); }
+  .status-text{ font-family:'Space Mono', monospace; font-size:0.82rem; color:var(--paper-dim); letter-spacing:0.01em; }
+  .confirm.is-success .status-text{ color:var(--paper); }
+  .status-action{ margin-top:10px; font-size:0.82rem; color:var(--paper); border-bottom:1px solid var(--accent); padding-bottom:1px; display:none; }
+  .confirm.is-error .status-action{ display:inline-block; }
+
+  .spinner-svg{ animation:spin .9s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .icon-svg circle, .icon-svg path{ stroke-dasharray:1; stroke-dashoffset:1; transition:stroke-dashoffset .5s ease; }
+  .icon-svg path{ transition-delay:.35s; }
+  .icon-svg.show circle, .icon-svg.show path{ stroke-dashoffset:0; }
+
+  .summary-card{ max-width:420px; margin:0 auto; }
+  .sc-row{ display:flex; justify-content:space-between; padding:14px 0; border-top:1px solid var(--line); font-size:0.92rem; }
+  .summary-card .sc-row:last-child{ border-bottom:1px solid var(--line); }
+  .sc-row span:first-child{ color:var(--paper-faint); }
+  .sc-row b{ font-weight:500; }
+  .cal-link{ text-align:center; margin-top:24px; }
+  .cal-link a{ font-size:0.86rem; color:var(--paper-dim); border-bottom:1px solid var(--line); padding-bottom:2px; }
+  .cal-link a:hover{ color:var(--paper); border-color:var(--paper-faint); }
+  .restart{ display:block; text-align:center; margin:32px auto 0; font-size:0.86rem; color:var(--paper-dim); border-bottom:1px solid var(--line); padding-bottom:2px; width:fit-content; }
+  .restart:hover{ color:var(--paper); }
+
+  footer{ padding:56px 0 40px; }
+  .foot-row{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:24px; font-size:0.85rem; color:var(--paper-faint); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="wordmark">Barbershop</div>
+    <nav class="nav-links">
+      <a href="#gallery">Gallery</a>
+      <a href="#services">Υπηρεσίες</a>
+      <a href="#how">Πώς δουλεύει</a>
+      <a href="#booking" class="nav-cta">Ραντεβού</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <span class="eyebrow">Barbershop</span>
+    <h1>Ραντεβού για κούρεμα, <em>χωρίς τηλέφωνο.</em></h1>
+    <p>Διάλεξε υπηρεσία και ώρα εδώ στο site. Το ραντεβού μπαίνει αυτόματα στο ημερολόγιο του καταστήματος.</p>
+    <a href="#booking" class="hero-cta">Κλείσε ραντεβού</a>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Πώς δουλεύει</span>
+      <h2>Τρία βήματα, μηδέν τηλεφωνήματα.</h2>
+    </div>
+    <div>
+      <div class="step">
+        <span class="n mono">01</span>
+        <div><h3>Κράτηση</h3><p>Ο πελάτης διαλέγει υπηρεσία και ώρα μέσα από τη φόρμα εδώ κάτω.</p></div>
+      </div>
+      <div class="step">
+        <span class="n mono">02</span>
+        <div><h3>Πραγματική διαθεσιμότητα</h3><p>Εμφανίζονται μόνο ώρες που είναι όντως ελεύθερες στο ημερολόγιο.</p></div>
+      </div>
+      <div class="step">
+        <span class="n mono">03</span>
+        <div><h3>Αυτόματη καταχώρηση</h3><p>Το ραντεβού μπαίνει κατευθείαν στο Google Calendar, χωρίς κανείς να το πληκτρολογεί.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="gallery">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Ο χώρος</span>
+      <h2>Στο κατάστημα.</h2>
+    </div>
+  </div>
+  <div class="g-row">
+    <img src="https://images.unsplash.com/photo-1759142449398-89357aa1bb36?q=80&w=1400&auto=format&fit=crop" alt="Εσωτερικό barbershop">
+    <img src="https://images.unsplash.com/photo-1675599193990-33d71150902b?q=80&w=1000&auto=format&fit=crop" alt="Τούβλινος τοίχος barbershop">
+    <img src="https://images.unsplash.com/photo-1770253980732-dfed1cfdfa43?q=80&w=1000&auto=format&fit=crop" alt="Κούρεμα">
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Τιμοκατάλογος</span>
+      <h2>Υπηρεσίες.</h2>
+    </div>
+    <div class="svc-list">
+      <div class="svc-row"><span class="name">Κούρεμα</span><span class="fill"></span><span class="price">15€ · 30′</span></div>
+      <div class="svc-row"><span class="name">Κούρεμα + Γένια</span><span class="fill"></span><span class="price">22€ · 45′</span></div>
+      <div class="svc-row"><span class="name">Ξύρισμα κλασικό</span><span class="fill"></span><span class="price">12€ · 25′</span></div>
+      <div class="svc-row"><span class="name">Παιδικό κούρεμα</span><span class="fill"></span><span class="price">10€ · 25′</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="booking" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Δοκίμασέ το</span>
+      <h2>Κλείσε ραντεβού.</h2>
+      <p>Αυτή η φόρμα δείχνει ακριβώς πώς καταλήγει το ραντεβού στο ημερολόγιο. Κλείσε μια ώρα και δες ότι δεν ξαναεμφανίζεται.</p>
+    </div>
+
+    <div class="booking-shell">
+      <div class="book-head" id="tabTrack">
+        <button class="tab active" data-s="1"><span class="tn mono">01</span>Υπηρεσία</button>
+        <button class="tab" data-s="2"><span class="tn mono">02</span>Ημέρα &amp; ώρα</button>
+        <button class="tab" data-s="3"><span class="tn mono">03</span>Στοιχεία</button>
+      </div>
+
+      <div class="book-body">
+
+        <div class="panel active" data-p="1">
+          <h3>Τι κούρεμα θέλεις;</h3>
+          <div class="sub">Διάλεξε υπηρεσία.</div>
+          <div class="row-list" id="serviceList">
+            <div class="item" role="button" tabindex="0" data-name="Κούρεμα" data-price="15€">
+              <div class="l"><span class="mark"></span><div><div class="t">Κούρεμα</div><div class="d">Κλασικό ή fade</div></div></div>
+              <span class="p">15€ · 30′</span>
+            </div>
+            <div class="item" role="button" tabindex="0" data-name="Κούρεμα + Γένια" data-price="22€">
+              <div class="l"><span class="mark"></span><div><div class="t">Κούρεμα + Γένια</div><div class="d">Πλήρες πακέτο</div></div></div>
+              <span class="p">22€ · 45′</span>
+            </div>
+            <div class="item" role="button" tabindex="0" data-name="Ξύρισμα κλασικό" data-price="12€">
+              <div class="l"><span class="mark"></span><div><div class="t">Ξύρισμα κλασικό</div><div class="d">Ζεστή πετσέτα &amp; ξυράφι</div></div></div>
+              <span class="p">12€ · 25′</span>
+            </div>
+            <div class="item" role="button" tabindex="0" data-name="Παιδικό κούρεμα" data-price="10€">
+              <div class="l"><span class="mark"></span><div><div class="t">Παιδικό κούρεμα</div><div class="d">Για μικρούς πελάτες</div></div></div>
+              <span class="p">10€ · 25′</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" data-p="2">
+          <h3>Διάλεξε μέρα και ώρα</h3>
+          <div class="sub">Οι ώρες που έχουν ήδη κλειστεί δεν εμφανίζονται.</div>
+          <div class="cal-head">
+            <div class="cal-nav"><button id="prevMonth" type="button">←</button><button id="nextMonth" type="button">→</button></div>
+            <div class="m-label" id="monthLabel">—</div>
+            <div style="width:66px;"></div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="slot-label" id="slotLabel">Διάλεξε ημέρα για να δεις ώρες</div>
+          <div class="slot-grid" id="slotGrid"></div>
+        </div>
+
+        <div class="panel" data-p="3">
+          <h3>Τα στοιχεία σου</h3>
+          <div class="sub">Θα σταλούν μαζί με το ραντεβού.</div>
+          <div class="form-grid">
+            <div class="field"><label>Ονοματεπώνυμο</label><input type="text" id="fName" placeholder="Δημήτρης Παπαδόπουλος"></div>
+            <div class="field"><label>Τηλέφωνο</label><input type="tel" id="fPhone" placeholder="69X XXX XXXX"></div>
+            <div class="field full"><label>Email (προαιρετικό)</label><input type="email" id="fEmail" placeholder="you@email.com"></div>
+          </div>
+        </div>
+
+        <div class="confirm" id="confirmPanel">
+          <div class="status">
+            <div class="status-icon" id="statusIcon"></div>
+            <div class="status-text" id="statusText">Καταχώρηση στο Google Calendar…</div>
+            <button class="status-action" id="statusAction" type="button">Δοκίμασε ξανά</button>
+          </div>
+          <div class="summary-card">
+            <div class="sc-row"><span>Υπηρεσία</span><b id="tSvc">—</b></div>
+            <div class="sc-row"><span>Ημέρα</span><b id="tDay">—</b></div>
+            <div class="sc-row"><span>Ώρα</span><b id="tTime">—</b></div>
+            <div class="sc-row"><span>Πελάτης</span><b id="tName">—</b></div>
+          </div>
+          <div class="cal-link" id="calLinkWrap" style="display:none"><a id="calLinkA" href="#" target="_blank" rel="noopener">Δες το στο Google Calendar σου ↗</a></div>
+          <button class="restart" id="restartBtn" type="button">Νέα δοκιμή ↺</button>
+        </div>
+
+      </div>
+
+      <div class="book-foot" id="bookFoot">
+        <div class="summary" id="summaryLine">Διάλεξε υπηρεσία για να ξεκινήσεις</div>
+        <div class="foot-btns">
+          <button class="btn-plain" id="backBtn" type="button" disabled>Πίσω</button>
+          <button class="btn-solid" id="nextBtn" type="button" disabled>Επόμενο</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <span>Barbershop — Δευ–Παρ 10:00–20:00, Σάβ 09:00–17:00</span>
+    <span>Τηλ: 24210 000 000</span>
+  </div>
+</footer>
+
+<script>
+  const API_BASE = 'https://barbershop-backend-jgfn.onrender.com';
+
+  const state = { service:null, date:null, dateKey:null, time:null, name:'', phone:'', email:'' };
+  let currentStep = 1;
+  const totalSteps = 3;
+
+  // ---- small hand-drawn icons (pathLength=1 so stroke-dasharray works for any shape) ----
+  function spinnerIcon(size){
+    return `<svg class="spinner-svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.6" opacity="0.2"/>
+      <path d="M21.5 12a9.5 9.5 0 0 0-9.5-9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>`;
+  }
+  function checkIcon(){
+    return `<svg class="icon-svg" width="24" height="24" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="19" stroke="currentColor" stroke-width="1.4" pathLength="1"/>
+      <path d="M13 22.5 19 28.5 31 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>
+    </svg>`;
+  }
+  function errorIcon(){
+    return `<svg class="icon-svg" width="24" height="24" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="19" stroke="currentColor" stroke-width="1.4" pathLength="1"/>
+      <path d="M16 16 28 28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" pathLength="1"/>
+      <path d="M28 16 16 28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" pathLength="1"/>
+    </svg>`;
+  }
+
+  function makeActivatable(el, handler){
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); handler(); } });
+  }
+
+  // ---- service ----
+  document.querySelectorAll('#serviceList .item').forEach(card=>{
+    makeActivatable(card, ()=>{
+      document.querySelectorAll('#serviceList .item').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.service = { name:card.dataset.name, price:card.dataset.price };
+      updateFoot();
+    });
+  });
+
+  // ---- calendar ----
+  const monthNamesGR = ['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
+  const monthNamesGRTitle = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+  const weekdayShort = ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ'];
+  const weekdayLongGR = ['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'];
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth();
+  const maxMonthsAhead = 3;
+
+  const calGrid = document.getElementById('calGrid');
+  const monthLabel = document.getElementById('monthLabel');
+  const prevMonthBtn = document.getElementById('prevMonth');
+  const nextMonthBtn = document.getElementById('nextMonth');
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function dateKeyOf(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; } // ISO YYYY-MM-DD, backend-ready
+
+  function renderCalendar(){
+    calGrid.innerHTML = '';
+    monthLabel.textContent = `${monthNamesGRTitle[viewMonth]} ${viewYear}`;
+
+    weekdayShort.forEach(w=>{
+      const el = document.createElement('div');
+      el.className = 'cal-wd';
+      el.textContent = w;
+      calGrid.appendChild(el);
+    });
+
+    const firstOfMonth = new Date(viewYear, viewMonth, 1);
+    // convert JS Sunday=0 start to Monday-start index
+    let leading = firstOfMonth.getDay() - 1;
+    if(leading < 0) leading = 6;
+    for(let i=0;i<leading;i++){
+      const el = document.createElement('div');
+      el.className = 'cal-day empty';
+      calGrid.appendChild(el);
+    }
+
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    for(let d=1; d<=daysInMonth; d++){
+      const cellDate = new Date(viewYear, viewMonth, d);
+      const el = document.createElement('div');
+      el.textContent = d;
+      const isPast = cellDate < today;
+      if(isPast){
+        el.className = 'cal-day past';
+      } else {
+        el.className = 'cal-day avail';
+        const key = dateKeyOf(viewYear, viewMonth, d);
+        if(state.dateKey === key) el.classList.add('selected');
+        makeActivatable(el, ()=>{
+          document.querySelectorAll('.cal-day.selected').forEach(c=>c.classList.remove('selected'));
+          el.classList.add('selected');
+          state.date = `${weekdayLongGR[cellDate.getDay()]}, ${d} ${monthNamesGR[viewMonth]}`;
+          state.dateKey = key;
+          state.time = null;
+          renderSlots();
+          updateFoot();
+        });
+      }
+      calGrid.appendChild(el);
+    }
+
+    prevMonthBtn.disabled = (viewYear===today.getFullYear() && viewMonth===today.getMonth());
+    const monthsAhead = (viewYear-today.getFullYear())*12 + (viewMonth-today.getMonth());
+    nextMonthBtn.disabled = monthsAhead >= maxMonthsAhead;
+  }
+
+  prevMonthBtn.addEventListener('click', ()=>{
+    viewMonth--; if(viewMonth<0){ viewMonth=11; viewYear--; }
+    renderCalendar();
+  });
+  nextMonthBtn.addEventListener('click', ()=>{
+    viewMonth++; if(viewMonth>11){ viewMonth=0; viewYear++; }
+    renderCalendar();
+  });
+
+  const slotGrid = document.getElementById('slotGrid');
+  const slotLabel = document.getElementById('slotLabel');
+
+  async function renderSlots(){
+    if(!state.dateKey){ slotGrid.innerHTML = ''; slotLabel.textContent = 'Διάλεξε ημέρα για να δεις ώρες'; return; }
+
+    slotLabel.textContent = `${state.date}`;
+    slotGrid.innerHTML = `<div class="slot-loading">${spinnerIcon(16)}<span>Ελέγχουμε το ημερολόγιο…</span><span class="slow-note" id="slowNote" style="display:none">Ο server μόλις ξυπνάει από αδράνεια — μπορεί να πάρει έως ~30 δευτερόλεπτα την πρώτη φορά.</span></div>`;
+
+    const slowTimer = setTimeout(()=>{
+      const n = document.getElementById('slowNote');
+      if(n) n.style.display = 'block';
+    }, 4000);
+
+    const myRequestDate = state.dateKey; // guard against out-of-order responses if user clicks around
+    try{
+      const res = await fetch(`${API_BASE}/api/availability?date=${state.dateKey}`);
+      clearTimeout(slowTimer);
+      if(state.dateKey !== myRequestDate) return;
+      if(!res.ok) throw new Error('bad status');
+      const data = await res.json();
+      renderSlotButtons(data.slots || []);
+    } catch(err){
+      clearTimeout(slowTimer);
+      if(state.dateKey !== myRequestDate) return;
+      slotGrid.innerHTML = `<div class="slot-empty">Δεν καταφέραμε να συνδεθούμε με το ημερολόγιο αυτή τη στιγμή.<button class="retry-link" id="retrySlots" type="button">Δοκίμασε ξανά</button></div>`;
+      document.getElementById('retrySlots')?.addEventListener('click', renderSlots);
+    }
+  }
+
+  function renderSlotButtons(slots){
+    slotGrid.innerHTML = '';
+    if(!slots.length){
+      slotGrid.innerHTML = `<div class="slot-empty">Δεν υπάρχουν άλλες διαθέσιμες ώρες αυτή τη μέρα.</div>`;
+      return;
+    }
+    slots.forEach(h=>{
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.textContent = h;
+      slot.setAttribute('role','button'); slot.setAttribute('tabindex','0');
+      if(state.time === h) slot.classList.add('selected');
+      makeActivatable(slot, ()=>{
+        document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
+        slot.classList.add('selected');
+        state.time = h;
+        updateFoot();
+      });
+      slotGrid.appendChild(slot);
+    });
+  }
+
+  renderCalendar();
+
+  // ---- contact ----
+  document.getElementById('fName').addEventListener('input', e=>{ state.name = e.target.value; updateFoot(); });
+  document.getElementById('fPhone').addEventListener('input', e=>{ state.phone = e.target.value; updateFoot(); });
+  document.getElementById('fEmail').addEventListener('input', e=>{ state.email = e.target.value; });
+
+  const nextBtn = document.getElementById('nextBtn');
+  const backBtn = document.getElementById('backBtn');
+  const summaryLine = document.getElementById('summaryLine');
+
+  function canAdvance(){
+    if(currentStep===1) return !!state.service;
+    if(currentStep===2) return !!(state.dateKey && state.time);
+    if(currentStep===3) return !!(state.name.trim() && state.phone.trim());
+    return false;
+  }
+
+  function updateFoot(){
+    nextBtn.disabled = !canAdvance();
+    backBtn.disabled = currentStep===1;
+    let parts = [];
+    if(state.service) parts.push(`<b>${state.service.name}</b>`);
+    if(state.date && state.time) parts.push(`<b>${state.date}, ${state.time}</b>`);
+    summaryLine.innerHTML = parts.length ? parts.join(' · ') : 'Διάλεξε υπηρεσία για να ξεκινήσεις';
+  }
+
+  function goToStep(n){
+    currentStep = n;
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', +p.dataset.p === n));
+    document.querySelectorAll('.tab').forEach(tab=>{
+      const s = +tab.dataset.s;
+      tab.classList.toggle('active', s===n);
+      tab.classList.toggle('done', s<n);
+    });
+    nextBtn.textContent = n===totalSteps ? 'Επιβεβαίωση' : 'Επόμενο';
+    updateFoot();
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    if(!canAdvance()) return;
+    if(currentStep < totalSteps){ goToStep(currentStep+1); }
+    else { submitBooking(); }
+  });
+  backBtn.addEventListener('click', ()=>{ if(currentStep>1) goToStep(currentStep-1); });
+
+  const confirmPanel = document.getElementById('confirmPanel');
+  const statusIcon = document.getElementById('statusIcon');
+  const statusText = document.getElementById('statusText');
+  const statusAction = document.getElementById('statusAction');
+
+  function setStatus(kind, text){
+    confirmPanel.classList.remove('is-loading','is-success','is-error');
+    statusText.textContent = text;
+    if(kind === 'loading'){
+      statusIcon.innerHTML = spinnerIcon(22);
+      confirmPanel.classList.add('is-loading');
+    } else if(kind === 'success'){
+      statusIcon.innerHTML = checkIcon();
+      confirmPanel.classList.add('is-success');
+      requestAnimationFrame(()=> statusIcon.querySelector('svg')?.classList.add('show'));
+    } else if(kind === 'error'){
+      statusIcon.innerHTML = errorIcon();
+      confirmPanel.classList.add('is-error');
+      requestAnimationFrame(()=> statusIcon.querySelector('svg')?.classList.add('show'));
+    }
+  }
+
+  async function submitBooking(){
+    document.querySelector('.book-body').querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    confirmPanel.classList.add('active');
+    document.getElementById('bookFoot').style.display = 'none';
+    document.getElementById('calLinkWrap').style.display = 'none';
+
+    document.getElementById('tSvc').textContent = `${state.service.name} (${state.service.price})`;
+    document.getElementById('tDay').textContent = state.date;
+    document.getElementById('tTime').textContent = state.time;
+    document.getElementById('tName').textContent = state.name;
+
+    setStatus('loading', 'Καταχώρηση στο Google Calendar…');
+
+    try{
+      const res = await fetch(`${API_BASE}/api/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: state.dateKey, time: state.time, service: state.service.name,
+          name: state.name, phone: state.phone, email: state.email,
+        }),
+      });
+      const data = await res.json().catch(()=>({}));
+
+      if(!res.ok){
+        setStatus('error', data.error || 'Η ώρα μόλις κλείστηκε από άλλον πελάτη.');
+        return;
+      }
+
+      setStatus('success', 'Καταχωρήθηκε στο Google Calendar');
+      if(data.htmlLink){
+        const a = document.getElementById('calLinkA');
+        a.href = data.htmlLink;
+        document.getElementById('calLinkWrap').style.display = 'block';
+      }
+    } catch(err){
+      setStatus('error', 'Δεν καταφέραμε να συνδεθούμε με τον server. Δοκίμασε ξανά.');
+    }
+  }
+
+  statusAction.addEventListener('click', submitBooking);
+
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    state.service = null; state.date = null; state.dateKey = null; state.time = null;
+    state.name = ''; state.phone = ''; state.email = '';
+    document.querySelectorAll('#serviceList .item').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('fName').value = '';
+    document.getElementById('fPhone').value = '';
+    document.getElementById('fEmail').value = '';
+    renderCalendar();
+    renderSlots();
+    confirmPanel.classList.remove('active','is-loading','is-success','is-error');
+    document.getElementById('bookFoot').style.display = 'flex';
+    goToStep(1);
+  });
+
+  goToStep(1);
+</script>
+
+</body>
+</html>
