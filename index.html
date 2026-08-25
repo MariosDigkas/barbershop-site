@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbershop — Book Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161616;
+    --paper:#F1EAE0;
+    --paper-dim:rgba(241,234,224,0.62);
+    --paper-faint:rgba(241,234,224,0.32);
+    --accent:#3E6B5C;
+    --line:rgba(241,234,224,0.13);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink); color:var(--paper);
+    font-family:'Inter', sans-serif; font-weight:400;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+    background-image:repeating-linear-gradient(45deg, rgba(241,234,224,0.03) 0px, rgba(241,234,224,0.03) 1.5px, transparent 1.5px, transparent 15px);
+  }
+  img{max-width:100%; display:block;}
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  h1,h2,h3{ font-family:'Playfair Display', serif; font-weight:500; line-height:1.12; letter-spacing:-0.01em; color:var(--paper); }
+  em{ font-style:italic; }
+  .mono{ font-family:'Space Mono', monospace; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 32px; }
+  .eyebrow{ font-family:'Space Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--paper-dim); display:inline-flex; align-items:center; gap:9px; }
+  .eyebrow::before{ content:''; width:16px; height:1px; background:var(--accent); display:inline-block; transform:scaleX(0); transform-origin:left; transition:transform .6s cubic-bezier(.2,.8,.2,1) .15s; }
+  .reveal.in .eyebrow::before{ transform:scaleX(1); }
+
+  .grain{ position:fixed; inset:0; z-index:5; pointer-events:none; opacity:0.03; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .stripe-drift{ position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:repeating-linear-gradient(45deg, rgba(62,107,92,0.09) 0px, rgba(62,107,92,0.09) 2px, transparent 2px, transparent 26px);
+    animation:stripeMove 14s linear infinite;
+  }
+  @keyframes stripeMove{ from{ background-position:0 0; } to{ background-position:184px 184px; } }
+  body > *{ position:relative; z-index:1; }
+  .nav{ z-index:100; }
+
+  .reveal{ opacity:0; transform:translateY(16px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){ .reveal, .clip-line span, .stripe-drift{ opacity:1 !important; transform:none !important; clip-path:none !important; transition:none !important; animation:none !important; } }
+
+  .nav{ position:fixed; top:0; left:0; right:0; z-index:100; background:transparent; border-bottom:1px solid transparent; transition:background .35s ease, border-color .35s ease; }
+  .nav.scrolled{ background:rgba(22,22,22,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  .nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:76px; }
+  .wordmark{ font-family:'Playfair Display', serif; font-style:italic; font-weight:500; font-size:1.35rem; letter-spacing:0.01em; display:flex; align-items:center; gap:8px; }
+  .brand-mark{ color:var(--accent); flex:0 0 auto; }
+  .nav-links{ display:flex; align-items:center; gap:40px; font-size:0.9rem; }
+  .nav-links a{ position:relative; padding-bottom:3px; color:var(--paper-dim); transition:color .2s; }
+  .nav-links a:not(.nav-cta)::after{ content:''; position:absolute; left:0; bottom:0; width:100%; height:1px; background:var(--accent); transform:scaleX(0); transform-origin:right; transition:transform .3s cubic-bezier(.2,.7,.2,1); }
+  .nav-links a:not(.nav-cta):hover::after{ transform:scaleX(1); transform-origin:left; }
+
+  .nav-links a:hover{ color:var(--paper); }
+  .nav-cta{ color:var(--paper) !important; border-bottom:1px solid var(--accent); padding-bottom:2px; }
+  @media(max-width:760px){ .nav-links a:not(.nav-cta){ display:none; } }
+
+  .hero{ position:relative; min-height:86vh; display:flex; align-items:flex-end; overflow:hidden; }
+  .hero-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .hero-overlay{
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(22,22,22,0.32) 0%, rgba(22,22,22,0.62) 60%, rgba(22,22,22,1) 100%);
+  }
+  .hero-inner{ position:relative; z-index:2; width:100%; padding:0 32px 90px; max-width:1080px; margin:0 auto; }
+  .hero .eyebrow{ margin-bottom:18px; display:flex; opacity:0; animation:heroFade .8s ease forwards .1s; }
+  .hero .eyebrow::before{ animation:eyebrowLine .6s cubic-bezier(.2,.8,.2,1) forwards .5s; }
+  @keyframes eyebrowLine{ to{ transform:scaleX(1); } }
+  .hero h1{ font-size:clamp(2.5rem, 5.6vw, 4.6rem); max-width:700px; }
+  .hero h1 em{ color:var(--accent); }
+  @keyframes heroFade{ to{ opacity:1; } }
+  .clip-line{ display:block; overflow:hidden; }
+  .clip-line span{ display:block; clip-path:inset(0 0 100% 0); animation:clipReveal 1s cubic-bezier(.2,.8,.2,1) forwards; }
+  .clip-line:nth-child(1) span{ animation-delay:.2s; }
+  .clip-line:nth-child(2) span{ animation-delay:.38s; }
+  @keyframes clipReveal{ to{ clip-path:inset(0 0 0 0); } }
+  .hero p{ margin-top:22px; max-width:440px; font-size:1.02rem; color:var(--paper-dim); opacity:0; animation:heroFadeUp .8s ease forwards .62s; }
+  @keyframes heroFadeUp{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+  .hero-cta{ display:inline-block; margin-top:34px; font-size:0.94rem; font-weight:500; padding:15px 30px; background:var(--accent); color:var(--paper); transition:opacity .2s; opacity:0; animation:heroFadeUp .8s ease forwards .78s; }
+  .hero-cta:hover{ opacity:0.85; }
+
+  .section{ padding:110px 0; border-bottom:1px solid var(--line); position:relative; }
+  .section-alt{ background:rgba(241,234,224,0.018); }
+  .section-head{ max-width:560px; margin-bottom:64px; position:relative; }
+  .section-head h2{ font-size:clamp(2.1rem,3.8vw,2.9rem); margin-top:14px; }
+  .section-head p{ margin-top:16px; color:var(--paper-dim); font-size:0.98rem; }
+  .section-num{ position:absolute; top:-6px; right:0; font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--paper-faint); letter-spacing:0.06em; }
+  @media(max-width:700px){ .section-num{ display:none; } }
+
+  .step{ display:flex; gap:36px; padding:32px 0; border-top:1px solid var(--line); }
+  .step:last-child{ border-bottom:1px solid var(--line); }
+  .step .n{ font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--paper-faint); flex:0 0 40px; padding-top:4px; }
+  .step h3{ font-size:1.15rem; font-weight:500; margin-bottom:6px; }
+  .step p{ font-size:0.92rem; color:var(--paper-dim); max-width:480px; }
+
+  .g-row{ display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:2px; }
+  .g-row .g-item{ overflow:hidden; height:340px; }
+  .g-row img{ width:100%; height:100%; object-fit:cover; filter:grayscale(0.3) contrast(1.05); opacity:0.92; transition:opacity .4s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
+  .g-row img:hover{ opacity:1; transform:scale(1.035); }
+  @media(max-width:760px){ .g-row{ grid-template-columns:1fr; } .g-row .g-item{ height:260px; } }
+
+  .prod-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:32px; max-width:640px; }
+  @media(max-width:560px){ .prod-grid{ grid-template-columns:1fr; } }
+  .prod{ transition:transform .4s ease; }
+  .prod:hover{ transform:translateY(-4px); }
+  .prod-frame{ overflow:hidden; background:rgba(241,234,224,0.03); }
+  .prod-frame img{ width:100%; aspect-ratio:4/5; object-fit:cover; filter:grayscale(0.25) contrast(1.05); transition:transform .6s cubic-bezier(.2,.7,.2,1), filter .5s ease; }
+  .prod:hover .prod-frame img{ transform:scale(1.05); filter:grayscale(0) contrast(1.05); }
+  .prod-info{ display:flex; justify-content:space-between; align-items:baseline; margin-top:16px; }
+  .prod-info h3{ font-family:'Playfair Display', serif; font-size:1.1rem; }
+  .prod-info .price{ font-family:'Space Mono', monospace; font-size:0.86rem; color:var(--accent); }
+  .prod-note{ margin-top:4px; font-size:0.82rem; color:var(--paper-faint); }
+
+  .svc-list{ max-width:640px; }
+  .svc-row{ display:flex; align-items:center; justify-content:space-between; gap:20px; padding:22px 4px 22px 16px; border-top:1px solid var(--line); position:relative; transition:padding-left .25s ease; }
+  .svc-list .svc-row:last-child{ border-bottom:1px solid var(--line); }
+  .svc-row::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--accent); transform:scaleY(0); transition:transform .25s ease; }
+  .svc-row:hover{ padding-left:22px; }
+  .svc-row:hover::before{ transform:scaleY(1); }
+  .svc-row .name{ font-family:'Playfair Display', serif; font-size:1.2rem; }
+  .svc-row .dur{ font-family:'Space Mono', monospace; font-size:0.74rem; color:var(--paper-faint); margin-left:12px; }
+  .svc-row .price{ font-family:'Space Mono', monospace; font-size:1rem; color:var(--accent); white-space:nowrap; }
+
+  .booking-shell{ border:none; }
+  .book-head{ display:flex; gap:8px; border-bottom:1px solid var(--line); overflow-x:auto; margin-bottom:8px; }
+  .tab{ flex:1; min-width:110px; padding:16px 4px 16px 0; font-family:'Space Mono', monospace; font-size:0.74rem; letter-spacing:0.04em; color:var(--paper-faint); border-right:none; text-align:left; transition:color .2s; }
+  .tab:last-child{ border-right:none; }
+  .tab.active{ color:var(--paper); }
+  .tab.done{ color:var(--paper-dim); }
+  .tab .tn{ display:block; margin-bottom:4px; }
+
+  .book-body{ padding:36px 0; min-height:320px; }
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:fade .3s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .panel h3{ font-size:1.3rem; margin-bottom:6px; }
+  .panel .sub{ color:var(--paper-dim); font-size:0.9rem; margin-bottom:30px; }
+
+  .row-list .item{ display:flex; align-items:center; justify-content:space-between; gap:20px; padding:18px 4px 18px 16px; border-top:1px solid var(--line); cursor:pointer; position:relative; transition:padding-left .25s ease; }
+  .row-list .item::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--accent); transform:scaleY(0); transition:transform .25s ease; }
+  .row-list .item:hover{ padding-left:22px; }
+  .row-list .item:hover::before{ transform:scaleY(1); }
+  .row-list .item:last-child{ border-bottom:1px solid var(--line); }
+  .row-list .item .l{ display:flex; align-items:center; gap:16px; }
+  .row-list .item .mark{ width:16px; height:16px; border:1px solid var(--paper-faint); border-radius:50%; flex:0 0 auto; position:relative; }
+  .row-list .item.selected .mark{ border-color:var(--accent); }
+  .row-list .item.selected .mark::after{ content:''; position:absolute; inset:3px; border-radius:50%; background:var(--accent); }
+  .row-list .item .t{ font-family:'Playfair Display', serif; font-size:1.02rem; }
+  .row-list .item .d{ font-size:0.82rem; color:var(--paper-faint); margin-top:2px; }
+  .row-list .item .p{ font-family:'Space Mono', monospace; font-size:0.88rem; color:var(--paper-dim); white-space:nowrap; }
+  .row-list .item:hover .t{ color:var(--paper); }
+
+  /* calendar */
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .cal-head .m-label{ font-family:'Playfair Display', serif; font-size:1.1rem; }
+  .cal-nav{ display:flex; gap:6px; }
+  .cal-nav button{ width:28px; height:28px; border:none; color:var(--paper-faint); font-size:0.95rem; transition:color .2s ease; }
+  .cal-nav button:hover{ color:var(--paper); }
+  .cal-nav button[disabled]{ opacity:0.25; cursor:not-allowed; pointer-events:none; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:34px; }
+  .cal-wd{ text-align:center; font-family:'Space Mono', monospace; font-size:0.66rem; color:var(--paper-faint); padding-bottom:8px; text-transform:uppercase; }
+  .cal-day{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; border:1px solid transparent; font-size:0.92rem; color:var(--paper-dim); }
+  .cal-day.empty{ visibility:hidden; }
+  .cal-day.avail{ border:1px solid transparent; color:var(--paper); cursor:pointer; }
+  .cal-day.avail:hover{ background:rgba(241,234,224,0.05); border-color:var(--paper-faint); }
+  .cal-day.past{ opacity:0.2; cursor:not-allowed; }
+  .cal-day.selected{ border-color:var(--accent); background:rgba(62,107,92,0.18); color:var(--paper); }
+
+  .slot-label{ font-family:'Space Mono', monospace; font-size:0.76rem; color:var(--paper-dim); margin-bottom:14px; }
+  .slot-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .slot{ padding:11px 4px; text-align:center; font-family:'Space Mono', monospace; font-size:0.82rem; border:none; border-bottom:1px solid var(--line); color:var(--paper-dim); transition:color .2s ease, border-color .2s ease; }
+  .slot:hover:not(.taken){ border-color:var(--paper-faint); color:var(--paper); }
+  .slot.selected{ border-color:var(--accent); color:var(--paper); }
+  .slot.taken{ display:none; }
+  .slot-empty{ font-size:0.86rem; color:var(--paper-faint); grid-column:1/-1; padding:12px 0; line-height:1.7; }
+  .retry-link{ color:var(--paper); border-bottom:1px solid var(--accent); font-size:0.86rem; padding-bottom:1px; margin-left:4px; }
+  .slot-loading{ grid-column:1/-1; display:flex; align-items:center; gap:10px; padding:14px 0; font-size:0.86rem; color:var(--paper-faint); font-family:'Space Mono', monospace; }
+  .slot-loading .slow-note{ display:block; width:100%; margin-top:6px; font-size:0.78rem; opacity:0.75; font-family:'Inter',sans-serif; }
+  @media(max-width:600px){ .slot-grid{ grid-template-columns:repeat(3,1fr); } }
+
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .field{ display:flex; flex-direction:column; gap:8px; }
+  .field.full{ grid-column:1/-1; }
+  .field label{ font-size:0.78rem; color:var(--paper-faint); }
+  .field input{ background:transparent; border:none; border-bottom:1px solid var(--line); padding:10px 2px; color:var(--paper); font-family:inherit; font-size:0.96rem; }
+  .field input:focus{ outline:none; border-color:var(--accent); }
+  @media(max-width:600px){ .form-grid{ grid-template-columns:1fr; } }
+
+  .book-foot{ display:flex; align-items:center; justify-content:space-between; padding:28px 0 0; border-top:1px solid var(--line); flex-wrap:wrap; gap:14px; }
+  .summary{ font-size:0.86rem; color:var(--paper-dim); }
+  .summary b{ color:var(--paper); font-weight:500; }
+  .foot-btns{ display:flex; gap:28px; align-items:center; }
+  .btn-plain{ font-size:0.88rem; color:var(--paper-dim); }
+  .btn-plain:hover{ color:var(--paper); }
+  .btn-plain[disabled]{ opacity:0.3; cursor:not-allowed; pointer-events:none; }
+  .btn-solid{ padding:12px 28px; border:1px solid var(--accent); background:transparent; color:var(--paper); font-size:0.86rem; font-weight:500; letter-spacing:0.02em; transition:background .25s ease, color .25s ease; }
+  .btn-solid[disabled]{ opacity:0.28; cursor:not-allowed; pointer-events:none; }
+  .btn-solid:hover:not([disabled]){ background:var(--accent); color:var(--paper); }
+
+  .confirm{ display:none; }
+  .confirm.active{ display:block; animation:fade .35s ease; }
+
+  /* status badge — spinner while syncing, then a hand-drawn checkmark (or X on error) */
+  .status{ display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:40px; }
+  .status-icon{
+    width:56px; height:56px; border-radius:50%; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+    color:var(--paper-dim); transition:border-color .3s ease, color .3s ease;
+  }
+  .confirm.is-success .status-icon{ border-color:var(--accent); color:var(--accent); }
+  .confirm.is-error .status-icon{ border-color:var(--accent); color:var(--accent); }
+  .status-text{ font-family:'Space Mono', monospace; font-size:0.82rem; color:var(--paper-dim); letter-spacing:0.01em; }
+  .confirm.is-success .status-text{ color:var(--paper); }
+  .status-action{ margin-top:10px; font-size:0.82rem; color:var(--paper); border-bottom:1px solid var(--accent); padding-bottom:1px; display:none; }
+  .confirm.is-error .status-action{ display:inline-block; }
+
+  .spinner-svg{ animation:spin .9s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .icon-svg circle, .icon-svg path{ stroke-dasharray:1; stroke-dashoffset:1; transition:stroke-dashoffset .5s ease; }
+  .icon-svg path{ transition-delay:.35s; }
+  .icon-svg.show circle, .icon-svg.show path{ stroke-dashoffset:0; }
+
+  .summary-card{ max-width:420px; margin:0 auto; }
+  .sc-row{ display:flex; justify-content:space-between; padding:14px 0; border-top:1px solid var(--line); font-size:0.92rem; }
+  .summary-card .sc-row:last-child{ border-bottom:1px solid var(--line); }
+  .sc-row span:first-child{ color:var(--paper-faint); }
+  .sc-row b{ font-weight:500; }
+  .cal-link{ text-align:center; margin-top:24px; }
+  .cal-link a{ font-size:0.86rem; color:var(--paper-dim); border-bottom:1px solid var(--line); padding-bottom:2px; }
+  .cal-link a:hover{ color:var(--paper); border-color:var(--paper-faint); }
+  .restart{ display:block; text-align:center; margin:32px auto 0; font-size:0.86rem; color:var(--paper-dim); border-bottom:1px solid var(--line); padding-bottom:2px; width:fit-content; }
+  .restart:hover{ color:var(--paper); }
+
+  footer{ padding:64px 0 0; }
+  .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; padding-bottom:48px; }
+  @media(max-width:700px){ .foot-grid{ grid-template-columns:1fr; gap:32px; } }
+  .foot-wordmark{ font-size:1.5rem; }
+  .foot-brand p{ margin-top:14px; color:var(--paper-dim); font-size:0.9rem; max-width:280px; }
+  .foot-col{ display:flex; flex-direction:column; gap:11px; }
+  .foot-col:not(.foot-brand) span{ font-size:0.88rem; color:var(--paper-dim); }
+  .foot-head{ font-family:'Space Mono', monospace; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--paper-faint); margin-bottom:2px; }
+  .foot-col a{ font-size:0.9rem; color:var(--paper-dim); transition:color .2s ease; width:fit-content; }
+  .foot-col a:hover{ color:var(--accent); }
+  footer .foot-row{ padding:20px 0; border-top:1px solid var(--line); justify-content:flex-start; }
+</style>
+</head>
+<body>
+
+<div class="stripe-drift"></div>
+<div class="grain"></div>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="wordmark">
+      <svg class="brand-mark" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="6" cy="6" r="3" stroke="currentColor" stroke-width="1.6"/>
+        <circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.6"/>
+        <line x1="20" y1="4" x2="8.12" y2="15.88" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="14.47" y1="14.48" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="8.12" y1="8.12" x2="12" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      Barbershop
+    </div>
+    <nav class="nav-links">
+      <a href="#gallery">Gallery</a>
+      <a href="#services">Services</a>
+      <a href="#booking" class="nav-cta">Book now</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <video class="hero-video" autoplay muted loop playsinline poster="https://images.pexels.com/videos/7697135/barber-barber-shop-barbering-beard-7697135.jpeg?auto=compress&h=1200">
+    <source src="https://videos.pexels.com/video-files/7697135/7697135-hd_1920_1080_30fps.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-inner">
+    <span class="eyebrow">Barbershop</span>
+    <h1>
+      <span class="clip-line"><span>Book a haircut,</span></span>
+      <span class="clip-line"><span><em>no phone call needed.</em></span></span>
+    </h1>
+    <p>Pick a service and a time, right here on the site. Your appointment goes straight into the shop's calendar.</p>
+    <a href="#booking" class="hero-cta">Book now</a>
+  </div>
+</section>
+
+<section class="section" id="gallery">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">01 / 04</span>
+      <span class="eyebrow">The space</span>
+      <h2>Inside the shop.</h2>
+    </div>
+  </div>
+  <div class="g-row reveal">
+    <div class="g-item"><img src="https://images.unsplash.com/photo-1759142449398-89357aa1bb36?q=80&w=1400&auto=format&fit=crop" alt="Barbershop interior"></div>
+    <div class="g-item"><img src="https://images.unsplash.com/photo-1675599193990-33d71150902b?q=80&w=1000&auto=format&fit=crop" alt="Barbershop brick wall"></div>
+    <div class="g-item"><img src="https://images.unsplash.com/photo-1770253980732-dfed1cfdfa43?q=80&w=1000&auto=format&fit=crop" alt="Haircut"></div>
+  </div>
+</section>
+
+<section class="section" id="shop" style="overflow:hidden;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">02 / 04</span>
+      <span class="eyebrow">Take it home</span>
+      <h2>Grooming products.</h2>
+      <p>The same products we use in the chair, ready to buy at the counter.</p>
+    </div>
+    <div class="prod-grid reveal">
+      <div class="prod">
+        <div class="prod-frame"><img src="https://images.unsplash.com/photo-1671777784866-2cdaff361902?q=80&w=900&auto=format&fit=crop" alt="Beard oil"></div>
+        <div class="prod-info"><h3>Beard Oil</h3><span class="price">$18</span></div>
+        <div class="prod-note">Softens &amp; conditions</div>
+      </div>
+      <div class="prod">
+        <div class="prod-frame"><img src="https://images.unsplash.com/photo-1671777788610-30cf5a213daa?q=80&w=900&auto=format&fit=crop" alt="Styling pomade"></div>
+        <div class="prod-info"><h3>Styling Pomade</h3><span class="price">$16</span></div>
+        <div class="prod-note">Firm hold, matte finish</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="services">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">03 / 04</span>
+      <span class="eyebrow">Price list</span>
+      <h2>Services.</h2>
+    </div>
+    <div class="svc-list reveal">
+      <div class="svc-row"><span class="name">Haircut<span class="dur">30′</span></span><span class="price">$15</span></div>
+      <div class="svc-row"><span class="name">Haircut + Beard<span class="dur">45′</span></span><span class="price">$22</span></div>
+      <div class="svc-row"><span class="name">Classic Shave<span class="dur">25′</span></span><span class="price">$12</span></div>
+      <div class="svc-row"><span class="name">Kids' Haircut<span class="dur">25′</span></span><span class="price">$10</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="booking" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">04 / 04</span>
+      <span class="eyebrow">Try it</span>
+      <h2>Book an appointment.</h2>
+      <p>This form shows exactly how a booking lands on the calendar. Book a slot and watch it disappear from the list.</p>
+    </div>
+
+    <div class="booking-shell">
+      <div class="book-head" id="tabTrack">
+        <button class="tab active" data-s="1"><span class="tn mono">01</span>Service</button>
+        <button class="tab" data-s="2"><span class="tn mono">02</span>Date &amp; time</button>
+        <button class="tab" data-s="3"><span class="tn mono">03</span>Details</button>
+      </div>
+
+      <div class="book-body">
+
+        <div class="panel active" data-p="1">
+          <h3>What are you booking?</h3>
+          <div class="sub">Choose a service.</div>
+          <div class="row-list" id="serviceList">
+            <div class="item" role="button" tabindex="0" data-name="Haircut" data-price="$15">
+              <div class="l"><span class="mark"></span><div><div class="t">Haircut</div><div class="d">Classic or fade</div></div></div>
+              <span class="p">$15 · 30′</span>
+            </div>
+            <div class="item" role="button" tabindex="0" data-name="Haircut + Beard" data-price="$22">
+              <div class="l"><span class="mark"></span><div><div class="t">Haircut + Beard</div><div class="d">The full package</div></div></div>
+              <span class="p">$22 · 45′</span>
+            </div>
+            <div class="item" role="button" tabindex="0" data-name="Classic Shave" data-price="$12">
+              <div class="l"><span class="mark"></span><div><div class="t">Classic Shave</div><div class="d">Hot towel &amp; straight razor</div></div></div>
+              <span class="p">$12 · 25′</span>
+            </div>
+            <div class="item" role="button" tabindex="0" data-name="Kids' Haircut" data-price="$10">
+              <div class="l"><span class="mark"></span><div><div class="t">Kids' Haircut</div><div class="d">For our youngest guests</div></div></div>
+              <span class="p">$10 · 25′</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" data-p="2">
+          <h3>Pick a date and time</h3>
+          <div class="sub">Times that are already booked won't show up.</div>
+          <div class="cal-head">
+            <div class="cal-nav"><button id="prevMonth" type="button">←</button><button id="nextMonth" type="button">→</button></div>
+            <div class="m-label" id="monthLabel">—</div>
+            <div style="width:66px;"></div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="slot-label" id="slotLabel">Pick a day to see available times</div>
+          <div class="slot-grid" id="slotGrid"></div>
+        </div>
+
+        <div class="panel" data-p="3">
+          <h3>Your details</h3>
+          <div class="sub">Sent along with your booking.</div>
+          <div class="form-grid">
+            <div class="field"><label>Full name</label><input type="text" id="fName" placeholder="John Smith"></div>
+            <div class="field"><label>Phone</label><input type="tel" id="fPhone" placeholder="(555) 000-0000"></div>
+            <div class="field full"><label>Email (optional)</label><input type="email" id="fEmail" placeholder="you@email.com"></div>
+          </div>
+        </div>
+
+        <div class="confirm" id="confirmPanel">
+          <div class="status">
+            <div class="status-icon" id="statusIcon"></div>
+            <div class="status-text" id="statusText">Adding to Google Calendar…</div>
+            <button class="status-action" id="statusAction" type="button">Try again</button>
+          </div>
+          <div class="summary-card">
+            <div class="sc-row"><span>Service</span><b id="tSvc">—</b></div>
+            <div class="sc-row"><span>Date</span><b id="tDay">—</b></div>
+            <div class="sc-row"><span>Time</span><b id="tTime">—</b></div>
+            <div class="sc-row"><span>Name</span><b id="tName">—</b></div>
+          </div>
+          <div class="cal-link" id="calLinkWrap" style="display:none"><a id="calLinkA" href="#" target="_blank" rel="noopener">View it on your Google Calendar ↗</a></div>
+          <button class="restart" id="restartBtn" type="button">Start over ↺</button>
+        </div>
+
+      </div>
+
+      <div class="book-foot" id="bookFoot">
+        <div class="summary" id="summaryLine">Choose a service to get started</div>
+        <div class="foot-btns">
+          <button class="btn-plain" id="backBtn" type="button" disabled>Back</button>
+          <button class="btn-solid" id="nextBtn" type="button" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div class="foot-col foot-brand">
+      <div class="wordmark foot-wordmark">
+        <svg class="brand-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="6" r="3" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.6"/>
+          <line x1="20" y1="4" x2="8.12" y2="15.88" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="14.47" y1="14.48" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="8.12" y1="8.12" x2="12" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Barbershop
+      </div>
+      <p>Book a haircut, no phone call needed. Reserve online, any time you like.</p>
+    </div>
+    <div class="foot-col">
+      <span class="foot-head">Menu</span>
+      <a href="#gallery">Gallery</a>
+      <a href="#services">Services</a>
+      <a href="#booking">Book now</a>
+    </div>
+    <div class="foot-col">
+      <span class="foot-head">Info</span>
+      <span>Mon–Fri 10am–8pm, Sat 9am–5pm</span>
+      <span>Tel: (555) 000-0000</span>
+    </div>
+  </div>
+  <div class="wrap foot-row">
+    <span>© 2026 Barbershop</span>
+  </div>
+</footer>
+
+<script>
+  // ---- nav: transparent over hero, solid once scrolled past it ----
+  const navEl = document.querySelector('.nav');
+  const heroEl = document.querySelector('.hero');
+  function syncNav(){
+    const threshold = heroEl.offsetHeight - navEl.offsetHeight;
+    navEl.classList.toggle('scrolled', window.scrollY > threshold);
+  }
+  syncNav();
+  window.addEventListener('scroll', syncNav, { passive:true });
+
+  // ---- scroll reveal ----
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealIO = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const delay = +(e.target.dataset.delay || 0);
+        setTimeout(()=> e.target.classList.add('in'), delay);
+        revealIO.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el=>revealIO.observe(el));
+
+  const API_BASE = 'https://barbershop-backend-jgfn.onrender.com';
+
+  const state = { service:null, date:null, dateKey:null, time:null, name:'', phone:'', email:'' };
+  let currentStep = 1;
+  const totalSteps = 3;
+
+  // ---- small hand-drawn icons (pathLength=1 so stroke-dasharray works for any shape) ----
+  function spinnerIcon(size){
+    return `<svg class="spinner-svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.6" opacity="0.2"/>
+      <path d="M21.5 12a9.5 9.5 0 0 0-9.5-9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>`;
+  }
+  function checkIcon(){
+    return `<svg class="icon-svg" width="24" height="24" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="19" stroke="currentColor" stroke-width="1.4" pathLength="1"/>
+      <path d="M13 22.5 19 28.5 31 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>
+    </svg>`;
+  }
+  function errorIcon(){
+    return `<svg class="icon-svg" width="24" height="24" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="19" stroke="currentColor" stroke-width="1.4" pathLength="1"/>
+      <path d="M16 16 28 28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" pathLength="1"/>
+      <path d="M28 16 16 28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" pathLength="1"/>
+    </svg>`;
+  }
+
+  function makeActivatable(el, handler){
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); handler(); } });
+  }
+
+  // ---- service ----
+  document.querySelectorAll('#serviceList .item').forEach(card=>{
+    makeActivatable(card, ()=>{
+      document.querySelectorAll('#serviceList .item').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.service = { name:card.dataset.name, price:card.dataset.price };
+      updateFoot();
+    });
+  });
+
+  // ---- calendar ----
+  const monthNamesGR = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthNamesGRTitle = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const weekdayShort = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const weekdayLongGR = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth();
+  const maxMonthsAhead = 3;
+
+  const calGrid = document.getElementById('calGrid');
+  const monthLabel = document.getElementById('monthLabel');
+  const prevMonthBtn = document.getElementById('prevMonth');
+  const nextMonthBtn = document.getElementById('nextMonth');
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function dateKeyOf(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; } // ISO YYYY-MM-DD, backend-ready
+
+  function renderCalendar(){
+    calGrid.innerHTML = '';
+    monthLabel.textContent = `${monthNamesGRTitle[viewMonth]} ${viewYear}`;
+
+    weekdayShort.forEach(w=>{
+      const el = document.createElement('div');
+      el.className = 'cal-wd';
+      el.textContent = w;
+      calGrid.appendChild(el);
+    });
+
+    const firstOfMonth = new Date(viewYear, viewMonth, 1);
+    // convert JS Sunday=0 start to Monday-start index
+    let leading = firstOfMonth.getDay() - 1;
+    if(leading < 0) leading = 6;
+    for(let i=0;i<leading;i++){
+      const el = document.createElement('div');
+      el.className = 'cal-day empty';
+      calGrid.appendChild(el);
+    }
+
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    for(let d=1; d<=daysInMonth; d++){
+      const cellDate = new Date(viewYear, viewMonth, d);
+      const el = document.createElement('div');
+      el.textContent = d;
+      const isPast = cellDate < today;
+      if(isPast){
+        el.className = 'cal-day past';
+      } else {
+        el.className = 'cal-day avail';
+        const key = dateKeyOf(viewYear, viewMonth, d);
+        if(state.dateKey === key) el.classList.add('selected');
+        makeActivatable(el, ()=>{
+          document.querySelectorAll('.cal-day.selected').forEach(c=>c.classList.remove('selected'));
+          el.classList.add('selected');
+          state.date = `${weekdayLongGR[cellDate.getDay()]}, ${d} ${monthNamesGR[viewMonth]}`;
+          state.dateKey = key;
+          state.time = null;
+          renderSlots();
+          updateFoot();
+        });
+      }
+      calGrid.appendChild(el);
+    }
+
+    prevMonthBtn.disabled = (viewYear===today.getFullYear() && viewMonth===today.getMonth());
+    const monthsAhead = (viewYear-today.getFullYear())*12 + (viewMonth-today.getMonth());
+    nextMonthBtn.disabled = monthsAhead >= maxMonthsAhead;
+  }
+
+  prevMonthBtn.addEventListener('click', ()=>{
+    viewMonth--; if(viewMonth<0){ viewMonth=11; viewYear--; }
+    renderCalendar();
+  });
+  nextMonthBtn.addEventListener('click', ()=>{
+    viewMonth++; if(viewMonth>11){ viewMonth=0; viewYear++; }
+    renderCalendar();
+  });
+
+  const slotGrid = document.getElementById('slotGrid');
+  const slotLabel = document.getElementById('slotLabel');
+
+  async function renderSlots(){
+    if(!state.dateKey){ slotGrid.innerHTML = ''; slotLabel.textContent = 'Pick a day to see available times'; return; }
+
+    slotLabel.textContent = `${state.date}`;
+    slotGrid.innerHTML = `<div class="slot-loading">${spinnerIcon(16)}<span>Checking the calendar…</span><span class="slow-note" id="slowNote" style="display:none">The server is just waking up from idle — this can take up to ~30 seconds the first time.</span></div>`;
+
+    const slowTimer = setTimeout(()=>{
+      const n = document.getElementById('slowNote');
+      if(n) n.style.display = 'block';
+    }, 4000);
+
+    const myRequestDate = state.dateKey; // guard against out-of-order responses if user clicks around
+    try{
+      const res = await fetch(`${API_BASE}/api/availability?date=${state.dateKey}`);
+      clearTimeout(slowTimer);
+      if(state.dateKey !== myRequestDate) return;
+      if(!res.ok) throw new Error('bad status');
+      const data = await res.json();
+      renderSlotButtons(data.slots || []);
+    } catch(err){
+      clearTimeout(slowTimer);
+      if(state.dateKey !== myRequestDate) return;
+      slotGrid.innerHTML = `<div class="slot-empty">We couldn't reach the calendar right now.<button class="retry-link" id="retrySlots" type="button">Try again</button></div>`;
+      document.getElementById('retrySlots')?.addEventListener('click', renderSlots);
+    }
+  }
+
+  function renderSlotButtons(slots){
+    slotGrid.innerHTML = '';
+    if(!slots.length){
+      slotGrid.innerHTML = `<div class="slot-empty">No more available times on this day.</div>`;
+      return;
+    }
+    slots.forEach(h=>{
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.textContent = h;
+      slot.setAttribute('role','button'); slot.setAttribute('tabindex','0');
+      if(state.time === h) slot.classList.add('selected');
+      makeActivatable(slot, ()=>{
+        document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
+        slot.classList.add('selected');
+        state.time = h;
+        updateFoot();
+      });
+      slotGrid.appendChild(slot);
+    });
+  }
+
+  renderCalendar();
+
+  // ---- contact ----
+  document.getElementById('fName').addEventListener('input', e=>{ state.name = e.target.value; updateFoot(); });
+  document.getElementById('fPhone').addEventListener('input', e=>{ state.phone = e.target.value; updateFoot(); });
+  document.getElementById('fEmail').addEventListener('input', e=>{ state.email = e.target.value; });
+
+  const nextBtn = document.getElementById('nextBtn');
+  const backBtn = document.getElementById('backBtn');
+  const summaryLine = document.getElementById('summaryLine');
+
+  function canAdvance(){
+    if(currentStep===1) return !!state.service;
+    if(currentStep===2) return !!(state.dateKey && state.time);
+    if(currentStep===3) return !!(state.name.trim() && state.phone.trim());
+    return false;
+  }
+
+  function updateFoot(){
+    nextBtn.disabled = !canAdvance();
+    backBtn.disabled = currentStep===1;
+    let parts = [];
+    if(state.service) parts.push(`<b>${state.service.name}</b>`);
+    if(state.date && state.time) parts.push(`<b>${state.date}, ${state.time}</b>`);
+    summaryLine.innerHTML = parts.length ? parts.join(' · ') : 'Choose a service to get started';
+  }
+
+  function goToStep(n){
+    currentStep = n;
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', +p.dataset.p === n));
+    document.querySelectorAll('.tab').forEach(tab=>{
+      const s = +tab.dataset.s;
+      tab.classList.toggle('active', s===n);
+      tab.classList.toggle('done', s<n);
+    });
+    nextBtn.textContent = n===totalSteps ? 'Confirm' : 'Next';
+    updateFoot();
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    if(!canAdvance()) return;
+    if(currentStep < totalSteps){ goToStep(currentStep+1); }
+    else { submitBooking(); }
+  });
+  backBtn.addEventListener('click', ()=>{ if(currentStep>1) goToStep(currentStep-1); });
+
+  const confirmPanel = document.getElementById('confirmPanel');
+  const statusIcon = document.getElementById('statusIcon');
+  const statusText = document.getElementById('statusText');
+  const statusAction = document.getElementById('statusAction');
+
+  function setStatus(kind, text){
+    confirmPanel.classList.remove('is-loading','is-success','is-error');
+    statusText.textContent = text;
+    if(kind === 'loading'){
+      statusIcon.innerHTML = spinnerIcon(22);
+      confirmPanel.classList.add('is-loading');
+    } else if(kind === 'success'){
+      statusIcon.innerHTML = checkIcon();
+      confirmPanel.classList.add('is-success');
+      requestAnimationFrame(()=> statusIcon.querySelector('svg')?.classList.add('show'));
+    } else if(kind === 'error'){
+      statusIcon.innerHTML = errorIcon();
+      confirmPanel.classList.add('is-error');
+      requestAnimationFrame(()=> statusIcon.querySelector('svg')?.classList.add('show'));
+    }
+  }
+
+  async function submitBooking(){
+    document.querySelector('.book-body').querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    confirmPanel.classList.add('active');
+    document.getElementById('bookFoot').style.display = 'none';
+    document.getElementById('calLinkWrap').style.display = 'none';
+
+    document.getElementById('tSvc').textContent = `${state.service.name} (${state.service.price})`;
+    document.getElementById('tDay').textContent = state.date;
+    document.getElementById('tTime').textContent = state.time;
+    document.getElementById('tName').textContent = state.name;
+
+    setStatus('loading', 'Adding to Google Calendar…');
+
+    try{
+      const res = await fetch(`${API_BASE}/api/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: state.dateKey, time: state.time, service: state.service.name,
+          name: state.name, phone: state.phone, email: state.email,
+        }),
+      });
+      const data = await res.json().catch(()=>({}));
+
+      if(!res.ok){
+        setStatus('error', data.error || 'That time was just booked by another customer.');
+        return;
+      }
+
+      setStatus('success', 'Added to Google Calendar');
+      if(data.htmlLink){
+        const a = document.getElementById('calLinkA');
+        a.href = data.htmlLink;
+        document.getElementById('calLinkWrap').style.display = 'block';
+      }
+    } catch(err){
+      setStatus('error', "We couldn't reach the server. Please try again.");
+    }
+  }
+
+  statusAction.addEventListener('click', submitBooking);
+
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    state.service = null; state.date = null; state.dateKey = null; state.time = null;
+    state.name = ''; state.phone = ''; state.email = '';
+    document.querySelectorAll('#serviceList .item').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('fName').value = '';
+    document.getElementById('fPhone').value = '';
+    document.getElementById('fEmail').value = '';
+    renderCalendar();
+    renderSlots();
+    confirmPanel.classList.remove('active','is-loading','is-success','is-error');
+    document.getElementById('bookFoot').style.display = 'flex';
+    goToStep(1);
+  });
+
+  goToStep(1);
+</script>
+
+</body>
+</html>
